@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="3782d225-6e06-4409-bd1d-45fab3f2284b" >
+		<http:listener-connection host="localhost" port="9512" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="13137e00-43c7-478c-a369-dba334a65e4e" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="PNS#817LNSS9" database="mydb6" />
+	</db:config>
+	<flow name="saikumar1Flow" doc:id="2031ed4f-1647-46fe-9124-36de5c8bc726" >
+		<http:listener doc:name="Listener" doc:id="4ac2ab0e-225f-41be-8036-c040e36c1c59" path="foreach" config-ref="HTTP_Listener_config"/>
+		<ee:transform doc:name="Transform Message" doc:id="eacc36b2-674d-487d-98cf-f19ba1090f0c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+1 to 10 map
+{
+	id: if ($$ == 4) 'super' else 200 + $$,
+	name: "dola",
+	number: 56874484,
+	lname: "palepu"
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="e82d8417-121e-4305-99ae-c3db0e3c4c97" >
+			<logger level="INFO" doc:name="Logger" doc:id="7577eb39-0987-4991-b91f-332e704f15eb" message="#[payload]"/>
+			<db:insert doc:name="Insert" doc:id="4dc8694e-20b3-4fb8-a0c8-66291e2750ab" config-ref="Database_Config">
+				<db:sql ><![CDATA[insert into mydb6.emp(id,name,number,lname)values(:id, :name, :number, :lname);]]></db:sql>
+				<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
+			</db:insert>
+		</foreach>
+	</flow>
+</mule>
